@@ -19,13 +19,14 @@ Advanced strategy tips:
   the actual current map state.
 """
 
-
 class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
         super().__init__()
         seed = random.randrange(maxsize)
         random.seed(seed)
         gamelib.debug_write('Random seed: {}'.format(seed))
+        self.leftCorner = False
+        self.rightCorner = False
 
     def on_game_start(self, config):
         """ 
@@ -70,7 +71,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
 
     def starter_strategy(self, game_state):
-        game_state.attempt_spawn(EMP, [24, 10], 3) 
+        #game_state.attempt_spawn(EMP, [24, 10], 3)
         """
         For defense we will use a spread out layout and some Scramblers early on.
         We will place destructors near locations the opponent managed to score on.
@@ -78,14 +79,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         If there are no stationary units to attack in the front, we will send Pings to try and score quickly.
         """
         # First, place basic defenses
-        self.build_defences(game_state)
+
         # Now build reactive defenses based on where the enemy scored
         self.build_reactive_defense(game_state)
 
         # If the turn is less than 5, stall with Scramblers and wait to see enemy's base
         if game_state.turn_number < 5:
-            #self.stall_with_scramblers(game_state)
-            pass
+            self.build_defences(game_state)
         else:
             # Now let's analyze the enemy base to see where their defenses are concentrated.
             # If they have many units in the front we can build a line for our EMPs to attack them at long range.
@@ -103,8 +103,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                     game_state.attempt_spawn(PING, best_location, 1000)
 
                 # Lastly, if we have spare cores, let's build some Encryptors to boost our Pings' health.
-                encryptor_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
-                game_state.attempt_spawn(ENCRYPTOR, encryptor_locations)
+                #encryptor_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
+                #game_state.attempt_spawn(ENCRYPTOR, encryptor_locations)
 
     def build_defences(self, game_state):
         """
@@ -122,6 +122,55 @@ class AlgoStrategy(gamelib.AlgoCore):
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
         game_state.attempt_spawn(DESTRUCTOR, destructor_locations)
         
+    def checkCorners(self,game_state, location):
+        right_corners = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9]]
+        left_corners = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9]]
+        if [location[0], location[1]] in right_corners:
+            self.rightCorner = True
+        if [location[0], location[1]] in left_corners:
+            self.leftCorner = True
+
+
+    def enforceLeft(self,game_state):
+        x = 0
+        while x < 16:
+            if x % 2 == 1:
+                game_state.attempt_spawn(FILTER, [x, 13])
+                x += 1
+        x = 1
+        while x > 16:
+            if x % 2 == 0:
+                game_state.attempt_spawn(DESTRUCTOR, [x, 12])
+                x += 1
+        x = 0
+        while x < 22:
+            if x == 0:
+                game_state.attempt_spawn(FILTER, [x, 13])
+            else:
+                game_state.attempt_spawn(FILTER, [x, 13])
+                game_state.attempt_spawn(DESTRUCTOR, [x, 12])
+
+
+    def enforceRight(self, game_state):
+        x = 27
+        while x > 12:
+            if x % 2 == 0:
+                game_state.attempt_spawn(FILTER, [x, 13])
+                x -= 1
+        x = 26
+        while x > 12:
+            if x % 2 == 1:
+                game_state.attempt_spawn(DESTRUCTOR, [x, 12])
+                x -= 1
+        x = 27
+        while x > 5:
+            if x == 27:
+                game_state.attempt_spawn(FILTER, [x, 13])
+            else:
+                game_state.attempt_spawn(FILTER, [x, 13])
+                game_state.attempt_spawn(DESTRUCTOR, [x,12])
+
+
 
 
     def build_reactive_defense(self, game_state):
@@ -134,10 +183,16 @@ class AlgoStrategy(gamelib.AlgoCore):
         numNeeded = []
         numNeeded.append(round(numScoredOn * 1.5))
         for location in self.scored_on_locations:
+            self.checkCorners(game_state, location)
+            if self.rightCorner:
+                self.enforceRight(game_state)
+            if self.leftCorner:
+                self.enforceLeft(game_state)
             # Build destructor one space above so that it doesn't block our own edge spawn locations
             self.tryFill(game_state, location, numNeeded)
         # Right corner attacks = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9]]
         # Left corner attacks = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9]]
+
     def tryFill(self, game_state, location, numNeeded):
         build_location = [location[0], location[1]]
         build_location1 = [location[0], location[1] + 1]
