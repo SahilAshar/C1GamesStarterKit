@@ -144,7 +144,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_spawn(DESTRUCTOR, build_location)
 
         if numNeeded:
-            if game_state.attempt_spawn(DESTRUCTOR, build_location1):
+            if game_state.attempt_spawn(FILTER, build_location1):
                 numNeeded[0] -= 1
             elif game_state.attempt_spawn(DESTRUCTOR, build_location2):
                 numNeeded[0] -= 1
