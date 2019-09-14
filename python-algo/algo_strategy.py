@@ -84,7 +84,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # If the turn is less than 5, stall with Scramblers and wait to see enemy's base
         if game_state.turn_number < 5:
-            self.stall_with_scramblers(game_state)
+            #self.stall_with_scramblers(game_state)
+            pass
         else:
             # Now let's analyze the enemy base to see where their defenses are concentrated.
             # If they have many units in the front we can build a line for our EMPs to attack them at long range.
@@ -112,15 +113,16 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         # Useful tool for setting up your base locations: https://www.kevinbai.design/terminal-map-maker
         # More community tools available at: https://terminal.c1games.com/rules#Download
-
+        # Place filters in front of destructors to soak up damage for them
+        filter_locations = [[2, 13], [5, 13], [9, 13], [12, 13], [16, 13], [19, 13], [23, 13], [26, 13]]
+        game_state.attempt_spawn(FILTER, filter_locations)
+        
         # Place destructors that attack enemy units
-        destructor_locations = [[0, 13], [27, 13], [8, 11], [19, 11], [13, 11], [14, 11]]
+        destructor_locations = [[3, 12], [4, 12], [10, 12], [11, 12], [17, 12], [18, 12], [24, 12],[25,12]]
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
         game_state.attempt_spawn(DESTRUCTOR, destructor_locations)
         
-        # Place filters in front of destructors to soak up damage for them
-        filter_locations = [[8, 12], [19, 12]]
-        game_state.attempt_spawn(FILTER, filter_locations)
+
 
     def build_reactive_defense(self, game_state):
         """
