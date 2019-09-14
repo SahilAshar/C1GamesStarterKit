@@ -175,8 +175,14 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # Now spawn EMPs next to the line
         # By asking attempt_spawn to spawn 1000 units, it will essentially spawn as many as we have resources for
-        game_state.attempt_spawn(EMP, [24, 10], 1000)
-        game_state.attempt_spawn(PING, [24, 10], 1000)
+        possible_spawn = []
+        for x in range (24, 6, -1):
+            possible_spawn.append([x, 10])
+
+        least_dmg_line_spawn = self.least_damage_spawn_location(game_state, possible_spawn)
+
+        game_state.attempt_spawn(EMP, least_dmg_line_spawn, 1)
+        game_state.attempt_spawn(PING, least_dmg_line_spawn, 1000)
 
     def least_damage_spawn_location(self, game_state, location_options):
         """
