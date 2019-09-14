@@ -103,11 +103,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         # If the turn is less than 5, stall with Scramblers and wait to see enemy's base
         if game_state.turn_number < 5:
             self.build_defences(game_state)
+        if game_state.get_resource(game_state.CORES, 0) > 10 and not self.leftCorner and not self.rightCorner:
+            self.randomDestructors(game_state)
         else:
-            if game_state.get_resource(game_state.CORES, 0) > 10 and not self.leftCorner and not self.rightCorner:
-                self.randomDestructors(game_state)
-
-            elif game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
+            if game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
                 self.rightCorner = True
 
             if game_state.turn_number % 2 == 0 :
