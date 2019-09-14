@@ -116,7 +116,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         # Place filters in front of destructors to soak up damage for them
         filter_locations = [[2, 13], [5, 13], [9, 13], [12, 13], [16, 13], [19, 13], [23, 13], [26, 13]]
         game_state.attempt_spawn(FILTER, filter_locations)
-        
+
         # Place destructors that attack enemy units
         destructor_locations = [[3, 12], [4, 12], [10, 12], [11, 12], [17, 12], [18, 12], [24, 12],[25,12]]
         # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
@@ -136,7 +136,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         for location in self.scored_on_locations:
             # Build destructor one space above so that it doesn't block our own edge spawn locations
             self.tryFill(game_state, location, numNeeded)
-
+        # Right corner attacks = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9]]
+        # Left corner attacks = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9]]
     def tryFill(self, game_state, location, numNeeded):
         build_location = [location[0], location[1]]
         build_location1 = [location[0], location[1] + 1]
