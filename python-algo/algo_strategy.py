@@ -19,6 +19,7 @@ Advanced strategy tips:
   the actual current map state.
 """
 
+
 class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
         super().__init__()
@@ -126,10 +127,32 @@ class AlgoStrategy(gamelib.AlgoCore):
         We can track where the opponent scored by looking at events in action frames 
         as shown in the on_action_frame function
         """
+        numScoredOn = len(self.scored_on_locations)
+        numNeeded = []
+        numNeeded.append(round(numScoredOn * 1.5))
         for location in self.scored_on_locations:
             # Build destructor one space above so that it doesn't block our own edge spawn locations
-            build_location = [location[0], location[1]+1]
-            game_state.attempt_spawn(DESTRUCTOR, build_location)
+            self.tryFill(location, numNeeded)
+
+    def tryFill(self, game_state, location, numNeeded):
+        build_location = [location[0], location[1]]
+        build_location1 = [location[0], location[1] + 1]
+        build_location2 = [location[0] + 1, location[1]]
+        build_location3 = [location[0], location[1] - 1]
+        build_location4 = [location[0] - 1, location[1]]
+        game_state.attempt_spawn(DESTRUCTOR, build_location)
+
+        if numNeeded:
+            if game_state.attempt_spawn(DESTRUCTOR, build_location1):
+                numNeeded[0] -= 1
+            elif game_state.attempt_spawn(DESTRUCTOR, build_location2):
+                numNeeded[0] -= 1
+            elif game_state.attempt_spawn(DESTRUCTOR, build_location3):
+                numNeeded[0] -= 1
+            elif game_state.attempt_spawn(DESTRUCTOR, build_location4):
+                numNeeded[0] -= 1
+
+
 
     def stall_with_scramblers(self, game_state):
         """
