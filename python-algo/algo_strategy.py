@@ -110,21 +110,14 @@ class AlgoStrategy(gamelib.AlgoCore):
             elif game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
                 self.rightCorner = True
 
-            if game_state.get_resource(game_state.BITS, 0) > (self.threshold + 1):
-                if self.rightCorner:
-                    self.attackLeft(game_state)
-                elif self.leftCorner:
-                    self.attackRight(game_state)
-                else:
-                    self.attackRight(game_state)
-
-            elif game_state.turn_number % 4 == 0:
-                if self.rightCorner:
-                    self.attackLeft(game_state)
-                elif self.leftCorner:
-                    self.attackRight(game_state)
-                else:
-                    self.attackRight(game_state)
+            if game_state.turn_number % 2 == 0 :
+                if game_state.get_resource(game_state.BITS, 0) > (self.threshold + 1):
+                    if self.rightCorner:
+                        self.attackLeft(game_state)
+                    elif self.leftCorner:
+                        self.attackRight(game_state)
+                    else:
+                        self.attackRight(game_state)
 
 
             # # Now let's analyze the enemy base to see where their defenses are concentrated.
