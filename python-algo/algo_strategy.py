@@ -27,6 +27,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         gamelib.debug_write('Random seed: {}'.format(seed))
         self.leftCorner = False
         self.rightCorner = False
+        self.threshold = 8
+        self.current_enemy_health = 30
+        self.previous_enemy_health = 30
+        self.my_previous_bits = 0
+        self.bits_spent = 0
 
     def on_game_start(self, config):
         """ 
@@ -61,6 +66,16 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         self.starter_strategy(game_state)
 
+        self.bits_spent = self.my_previous_bits - game_state.get_resource(game_state.BITS, 0)
+
+        enemy_health_lost = self.previous_enemy_health - self.current_enemy_health
+
+        self.previous_enemy_health  = self.current_enemy_health
+        self.current_enemy_health = game_state.enemy_health
+
+        if enemy_health_lost == 0 and self.threshold > self.bits_spent:
+            self.threshold = self.bits_spent
+
         game_state.submit_turn()
 
 
@@ -78,33 +93,51 @@ class AlgoStrategy(gamelib.AlgoCore):
         For offense we will use long range EMPs if they place stationary units near the enemy's front.
         If there are no stationary units to attack in the front, we will send Pings to try and score quickly.
         """
+        self.my_previous_bits = game_state.get_resource(game_state.BITS, 0)
         # First, place basic defenses
+
 
         # Now build reactive defenses based on where the enemy scored
         self.build_reactive_defense(game_state)
 
         # If the turn is less than 5, stall with Scramblers and wait to see enemy's base
-        if game_state.turn_number < 5:
+        if game_state.turn_number < 4:
             self.build_defences(game_state)
         else:
-            # Now let's analyze the enemy base to see where their defenses are concentrated.
-            # If they have many units in the front we can build a line for our EMPs to attack them at long range.
-            if self.detect_enemy_unit(game_state, unit_type=None, valid_x=None, valid_y=[14, 15]) > 10:
-                self.emp_line_strategy(game_state)
-            else:
-                # They don't have many units in the front so lets figure out their least defended area and send Pings there.
+            if game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
+                self.rightCorner = True
 
-                # Only spawn Ping's every other turn
-                # Sending more at once is better since attacks can only hit a single ping at a time
-                if game_state.turn_number % 2 == 1:
-                    # To simplify we will just check sending them from back left and right
-                    ping_spawn_location_options = [[13, 0], [14, 0]]
-                    best_location = self.least_damage_spawn_location(game_state, ping_spawn_location_options)
-                    game_state.attempt_spawn(PING, best_location, 1000)
+            if game_state.get_resource(game_state.CORES, 0) > (self.threshold + 1):
+                if self.rightCorner:
+                    self.attackLeft(game_state)
+                if self.leftCorner:
+                    self.attackRight(game_state)
 
-                # Lastly, if we have spare cores, let's build some Encryptors to boost our Pings' health.
-                #encryptor_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
-                #game_state.attempt_spawn(ENCRYPTOR, encryptor_locations)
+            elif game_state.turn_number % 4 == 0:
+                if self.rightCorner:
+                    self.attackLeft(game_state)
+                if self.leftCorner:
+                    self.attackRight(game_state)
+
+
+            # # Now let's analyze the enemy base to see where their defenses are concentrated.
+            # # If they have many units in the front we can build a line for our EMPs to attack them at long range.
+            # if self.detect_enemy_unit(game_state, unit_type=None, valid_x=None, valid_y=[14, 15]) > 10:
+            #     self.emp_line_strategy(game_state)
+            # else:
+            #     # They don't have many units in the front so lets figure out their least defended area and send Pings there.
+            #
+            #     # Only spawn Ping's every other turn
+            #     # Sending more at once is better since attacks can only hit a single ping at a time
+            #     if game_state.turn_number % 2 == 1:
+            #         # To simplify we will just check sending them from back left and right
+            #         ping_spawn_location_options = [[13, 0], [14, 0]]
+            #         best_location = self.least_damage_spawn_location(game_state, ping_spawn_location_options)
+            #         game_state.attempt_spawn(PING, best_location, 1000)
+            #
+            #     # Lastly, if we have spare cores, let's build some Encryptors to boost our Pings' health.
+            #     #encryptor_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
+            #     #game_state.attempt_spawn(ENCRYPTOR, encryptor_locations)
 
     def build_defences(self, game_state):
         """
@@ -125,6 +158,8 @@ class AlgoStrategy(gamelib.AlgoCore):
     def checkCorners(self,game_state, location):
         right_corners = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9]]
         left_corners = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9]]
+        # left extend: [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7], [7, 6]]
+        # right extend: [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9], [22, 8], [21, 7], [20, 6]]
         if [location[0], location[1]] in right_corners:
             self.rightCorner = True
             self.leftCorner = False
@@ -132,6 +167,26 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.leftCorner = True
             self.rightCorner = False
 
+    def attackLeft(self, game_state):
+        game_state.attempt_spawn(ENCRYPTOR, [14, 1], 1)
+        game_state.attempt_spawn(ENCRYPTOR, [13, 2], 1)
+        game_state.attempt_spawn(ENCRYPTOR, [12, 3], 1)
+        if game_state.get_resource(game_state.BITS) > 15:
+            game_state.attempt_spawn(EMP, [14, 0], 2)
+        else:
+            game_state.attempt_spawn(EMP, [14, 0], 1)
+        game_state.attempt_spawn(PING, [14, 0], 1000)
+
+
+    def attackRight(self, game_state):
+        game_state.attempt_spawn(ENCRYPTOR, [13, 1], 1)
+        game_state.attempt_spawn(ENCRYPTOR, [14, 2], 1)
+        game_state.attempt_spawn(ENCRYPTOR, [15, 3], 1)
+        if game_state.get_resource(game_state.BITS) > 15:
+            game_state.attempt_spawn(EMP, [13, 0], 2)
+        else:
+            game_state.attempt_spawn(EMP, [13, 0], 1)
+        game_state.attempt_spawn(PING, [13, 0], 1000)
 
     def enforceLeft(self,game_state):
         x = 0
@@ -153,6 +208,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(FILTER, [x, 13])
                 game_state.attempt_spawn(DESTRUCTOR, [x, 12])
                 x += 1
+        self.buildRightCannon(game_state)
 
 
     def enforceRight(self, game_state):
@@ -175,7 +231,24 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(FILTER, [x, 13])
                 game_state.attempt_spawn(DESTRUCTOR, [x,12])
                 x -= 1
+        self.buildLeftCannon(game_state)
 
+    def buildLeftCannon(self, game_state):
+        cannon_points = [[5, 11], [5, 10], [6, 10], [6, 9], [7, 9], [7, 8], [8, 8], [8, 7], [9, 7], [9, 6],
+                         [10, 6], [10, 5], [11, 5], [11, 4], [12, 4], [12, 3], [13, 3], [13, 2], [14, 2],
+                         [14, 1], [15, 1]]
+        cannon_protection_points = [[6, 11], [7, 10], [8, 9], [9, 8], [10, 7], [11, 6], [12, 5], [13, 4], [14, 3], [15, 2]]
+        game_state.attempt_spawn(ENCRYPTOR, cannon_points)
+        game_state.attempt_spawn(FILTER, cannon_protection_points)
+
+    def buildRightCannon(self, game_state):
+        cannon_points = [[22, 11], [23, 11], [21, 10], [22, 10], [20, 9], [21, 9], [19, 8], [20, 8], [18, 7],
+                         [19, 7], [17, 6], [18, 6], [16, 5], [17, 5], [15, 4], [16, 4], [14, 3], [15, 3],
+                         [13, 2], [14, 2], [12, 1], [13, 1]]
+        cannon_protection_points = [[21, 11], [20, 10], [19, 9], [18, 8], [17, 7], [16, 6], [15, 5], [14, 4], [13, 3],
+                                    [12, 2]]
+        game_state.attempt_spawn(ENCRYPTOR, cannon_points)
+        game_state.attempt_spawn(FILTER, cannon_protection_points)
 
 
 
