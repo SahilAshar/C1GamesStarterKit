@@ -146,9 +146,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         while x < 22:
             if x == 0:
                 game_state.attempt_spawn(FILTER, [x, 13])
+                x += 1
             else:
                 game_state.attempt_spawn(FILTER, [x, 13])
                 game_state.attempt_spawn(DESTRUCTOR, [x, 12])
+                x += 1
 
 
     def enforceRight(self, game_state):
@@ -166,9 +168,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         while x > 5:
             if x == 27:
                 game_state.attempt_spawn(FILTER, [x, 13])
+                x -= 1
             else:
                 game_state.attempt_spawn(FILTER, [x, 13])
                 game_state.attempt_spawn(DESTRUCTOR, [x,12])
+                x -= 1
 
 
 
