@@ -113,14 +113,18 @@ class AlgoStrategy(gamelib.AlgoCore):
             if game_state.get_resource(game_state.CORES, 0) > (self.threshold + 1):
                 if self.rightCorner:
                     self.attackLeft(game_state)
-                if self.leftCorner:
+                elif self.leftCorner:
                     self.attackRight(game_state)
+                else:
+                    self.attackMiddle(game_state)
 
             elif game_state.turn_number % 4 == 0:
                 if self.rightCorner:
                     self.attackLeft(game_state)
-                if self.leftCorner:
+                elif self.leftCorner:
                     self.attackRight(game_state)
+                else:
+                    self.attackMiddle(game_state)
 
 
             # # Now let's analyze the enemy base to see where their defenses are concentrated.
@@ -156,12 +160,12 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(FILTER, f)
             i += 1
 
-        game_state.attempt_spawn(FILTER, filters)
         game_state.attempt_spawn(DESTRUCTOR, destructors)
+        game_state.attempt_spawn(FILTER, filters)
 
 
     def randomDestructors(self, game_state):
-        destructors  = [[8, 11], [12, 11], [14, 11], [19, 11], [11, 10], [10, 9], [14, 9], [16, 9]]
+        destructors = [[8, 11], [12, 11], [14, 11], [19, 11], [11, 10], [10, 9], [14, 9], [16, 9]]
         filters = [[12, 10], [16, 10], [11, 8]]
         game_state.attempt_spawn(DESTRUCTOR, destructors)
         game_state.attempt_spawn(FILTER, filters)
@@ -194,6 +198,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         if [location[0], location[1]] in left_corners:
             self.leftCorner = True
             self.rightCorner = False
+
+    def attackMiddle(self, game_state):
+        if game_state.get_resource(game_state.BITS) > 15:
+            game_state.attempt_spawn(EMP, [14, 0], 2)
+        else:
+            game_state.attempt_spawn(EMP, [14, 0], 1)
+        game_state.attempt_spawn(PING, [14, 0], 1000)
 
     def attackLeft(self, game_state):
         game_state.attempt_spawn(ENCRYPTOR, [14, 1], 1)
