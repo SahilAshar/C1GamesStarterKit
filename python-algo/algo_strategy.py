@@ -133,7 +133,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         numNeeded.append(round(numScoredOn * 1.5))
         for location in self.scored_on_locations:
             # Build destructor one space above so that it doesn't block our own edge spawn locations
-            self.tryFill(location, numNeeded)
+            self.tryFill(game_state, location, numNeeded)
 
     def tryFill(self, game_state, location, numNeeded):
         build_location = [location[0], location[1]]
