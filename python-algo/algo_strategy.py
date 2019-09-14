@@ -127,19 +127,21 @@ class AlgoStrategy(gamelib.AlgoCore):
         left_corners = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9]]
         if [location[0], location[1]] in right_corners:
             self.rightCorner = True
+            self.leftCorner = False
         if [location[0], location[1]] in left_corners:
             self.leftCorner = True
+            self.rightCorner = False
 
 
     def enforceLeft(self,game_state):
         x = 0
         while x < 16:
-            if x % 2 == 1:
+            if x % 2 == 0:
                 game_state.attempt_spawn(FILTER, [x, 13])
             x += 1
         x = 1
         while x > 16:
-            if x % 2 == 0:
+            if x % 2 == 1:
                 game_state.attempt_spawn(DESTRUCTOR, [x, 12])
             x += 1
         x = 0
@@ -156,12 +158,12 @@ class AlgoStrategy(gamelib.AlgoCore):
     def enforceRight(self, game_state):
         x = 27
         while x > 12:
-            if x % 2 == 0:
+            if x % 2 == 1:
                 game_state.attempt_spawn(FILTER, [x, 13])
             x -= 1
         x = 26
         while x > 12:
-            if x % 2 == 1:
+            if x % 2 == 0:
                 game_state.attempt_spawn(DESTRUCTOR, [x, 12])
             x -= 1
         x = 27
