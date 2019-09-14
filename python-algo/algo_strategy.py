@@ -136,12 +136,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         while x < 16:
             if x % 2 == 1:
                 game_state.attempt_spawn(FILTER, [x, 13])
-                x += 1
+            x += 1
         x = 1
         while x > 16:
             if x % 2 == 0:
                 game_state.attempt_spawn(DESTRUCTOR, [x, 12])
-                x += 1
+            x += 1
         x = 0
         while x < 22:
             if x == 0:
@@ -156,12 +156,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         while x > 12:
             if x % 2 == 0:
                 game_state.attempt_spawn(FILTER, [x, 13])
-                x -= 1
+            x -= 1
         x = 26
         while x > 12:
             if x % 2 == 1:
                 game_state.attempt_spawn(DESTRUCTOR, [x, 12])
-                x -= 1
+            x -= 1
         x = 27
         while x > 5:
             if x == 27:
