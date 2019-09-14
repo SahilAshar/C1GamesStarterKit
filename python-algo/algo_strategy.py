@@ -116,7 +116,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 elif self.leftCorner:
                     self.attackRight(game_state)
                 else:
-                    self.attackMiddle(game_state)
+                    self.attackRight(game_state)
 
             elif game_state.turn_number % 4 == 0:
                 if self.rightCorner:
@@ -124,7 +124,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 elif self.leftCorner:
                     self.attackRight(game_state)
                 else:
-                    self.attackMiddle(game_state)
+                    self.attackRight(game_state)
 
 
             # # Now let's analyze the enemy base to see where their defenses are concentrated.
