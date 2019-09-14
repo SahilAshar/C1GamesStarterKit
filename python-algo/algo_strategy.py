@@ -110,7 +110,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             elif game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
                 self.rightCorner = True
 
-            if game_state.get_resource(game_state.CORES, 0) > (self.threshold + 1):
+            if game_state.get_resource(game_state.BITS, 0) > (self.threshold + 1):
                 if self.rightCorner:
                     self.attackLeft(game_state)
                 elif self.leftCorner:
