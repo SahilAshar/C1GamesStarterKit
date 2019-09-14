@@ -30,7 +30,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.threshold = 8
         self.current_enemy_health = 30
         self.previous_enemy_health = 30
-        self.my_previous_bits = 0
+        self.my_previous_bits = 5
         self.bits_spent = 0
 
     def on_game_start(self, config):
@@ -103,20 +103,28 @@ class AlgoStrategy(gamelib.AlgoCore):
         # If the turn is less than 5, stall with Scramblers and wait to see enemy's base
         if game_state.turn_number < 5:
             self.build_defences(game_state)
-        if game_state.get_resource(game_state.CORES, 0) > 10 and not self.leftCorner and not self.rightCorner:
-            self.randomDestructors(game_state)
         else:
-            if game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
+            if game_state.get_resource(game_state.CORES, 0) > 10 and not self.leftCorner and not self.rightCorner:
+                self.randomDestructors(game_state)
+
+            elif game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
                 self.rightCorner = True
 
-            if game_state.turn_number % 2 == 0 :
-                if game_state.get_resource(game_state.BITS, 0) > (self.threshold + 1):
-                    if self.rightCorner:
-                        self.attackLeft(game_state)
-                    elif self.leftCorner:
-                        self.attackRight(game_state)
-                    else:
-                        self.attackRight(game_state)
+            if game_state.get_resource(game_state.BITS, 0) > (self.threshold + 1):
+                if self.rightCorner:
+                    self.attackLeft(game_state)
+                elif self.leftCorner:
+                    self.attackRight(game_state)
+                else:
+                    self.attackRight(game_state)
+
+            elif game_state.turn_number % 4 == 0:
+                if self.rightCorner:
+                    self.attackLeft(game_state)
+                elif self.leftCorner:
+                    self.attackRight(game_state)
+                else:
+                    self.attackRight(game_state)
 
 
             # # Now let's analyze the enemy base to see where their defenses are concentrated.
