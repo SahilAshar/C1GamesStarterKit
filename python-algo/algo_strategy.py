@@ -178,8 +178,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_spawn(DESTRUCTOR, destructor_locations)
         
     def checkCorners(self,game_state, location):
-        right_corners = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9], [22, 8], [21, 7], [20, 6]]
-        left_corners = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7], [7, 6]]
+        right_corners = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9]]
+        left_corners = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9]]
         # left extend: [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7], [7, 6]]
         # right extend: [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9], [22, 8], [21, 7], [20, 6]]
         if [location[0], location[1]] in right_corners:
@@ -286,13 +286,13 @@ class AlgoStrategy(gamelib.AlgoCore):
         numNeeded = []
         numNeeded.append(round(numScoredOn * 1.5))
         for location in self.scored_on_locations:
+            self.tryFill(game_state, location, numNeeded)
             self.checkCorners(game_state, location)
             if self.rightCorner:
                 self.enforceRight(game_state)
             if self.leftCorner:
                 self.enforceLeft(game_state)
             # Build destructor one space above so that it doesn't block our own edge spawn locations
-            self.tryFill(game_state, location, numNeeded)
         # Right corner attacks = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9]]
         # Left corner attacks = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9]]
 
