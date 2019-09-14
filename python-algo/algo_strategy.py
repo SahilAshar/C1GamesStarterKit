@@ -73,8 +73,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         self.previous_enemy_health  = self.current_enemy_health
         self.current_enemy_health = game_state.enemy_health
 
-        if enemy_health_lost == 0 and self.threshold > self.bits_spent:
+        if enemy_health_lost == 0 and self.threshold < self.bits_spent:
             self.threshold = self.bits_spent
+            gamelib.debug_write(self.threshold)
 
         game_state.submit_turn()
 
