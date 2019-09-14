@@ -293,6 +293,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         numNeeded.append(round(numScoredOn * 1.5))
         for location in self.scored_on_locations:
             self.tryFill(game_state, location, numNeeded)
+        for location in self.scored_on_locations:
             self.checkCorners(game_state, location)
             if self.rightCorner:
                 self.enforceRight(game_state)
