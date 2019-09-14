@@ -104,7 +104,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         if game_state.turn_number < 4:
             self.build_defences(game_state)
         else:
-            if game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
+            if game_state.get_resource(game_state.CORES, 0) > 30 and not self.leftCorner and not self.rightCorner:
+                self.reinforceMiddle(game_state)
+
+            elif game_state.get_resource(game_state.CORES, 0) > 60 and not self.leftCorner:
                 self.rightCorner = True
 
             if game_state.get_resource(game_state.CORES, 0) > (self.threshold + 1):
@@ -139,6 +142,25 @@ class AlgoStrategy(gamelib.AlgoCore):
             #     #encryptor_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
             #     #game_state.attempt_spawn(ENCRYPTOR, encryptor_locations)
 
+    def reinforceMiddle(self, game_state):
+        destructors = [[14, 12], [13, 12], [15, 12], [12, 12], [16, 12], [11, 12], [17,12], [10, 12], [18,12], [9, 12], [19,12],
+                       [20,12], [8,12], [21, 12], [7, 12], [22, 12]]
+        filters = [[14, 13], [13, 13], [15, 13], [12, 13], [16, 13], [11, 13], [17,13], [10, 13], [18,13], [9, 13], [19,13],
+                       [20,13], [8,13], [21, 13], [7, 13], [22, 13]]
+        i = 0
+
+        for d, f in zip(destructors, filters):
+            if i % 2 == 0:
+                game_state.attempt_spawn(DESTRUCTOR, d)
+            else:
+                game_state.attempt_spawn(FILTER, f)
+            i += 1
+
+        game_state.attempt_spawn(DESTRUCTOR, destructors)
+        game_state.attempt_spawn(FILTER, filters)
+
+
+
     def build_defences(self, game_state):
         """
         Build basic defenses using hardcoded locations.
@@ -156,8 +178,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_spawn(DESTRUCTOR, destructor_locations)
         
     def checkCorners(self,game_state, location):
-        right_corners = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9]]
-        left_corners = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9]]
+        right_corners = [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9], [22, 8], [21, 7], [20, 6]]
+        left_corners = [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7], [7, 6]]
         # left extend: [[0, 13], [1, 12], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7], [7, 6]]
         # right extend: [[27, 13], [26, 12], [25, 11], [24, 10], [23, 9], [22, 8], [21, 7], [20, 6]]
         if [location[0], location[1]] in right_corners:
@@ -229,7 +251,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 x -= 1
             else:
                 game_state.attempt_spawn(FILTER, [x, 13])
-                game_state.attempt_spawn(DESTRUCTOR, [x,12])
+                game_state.attempt_spawn(DESTRUCTOR, [x, 12])
                 x -= 1
         self.buildLeftCannon(game_state)
 
@@ -237,6 +259,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         cannon_points = [[5, 11], [5, 10], [6, 10], [6, 9], [7, 9], [7, 8], [8, 8], [8, 7], [9, 7], [9, 6],
                          [10, 6], [10, 5], [11, 5], [11, 4], [12, 4], [12, 3], [13, 3], [13, 2], [14, 2],
                          [14, 1], [15, 1]]
+        cannon_points.reverse()
         cannon_protection_points = [[6, 11], [7, 10], [8, 9], [9, 8], [10, 7], [11, 6], [12, 5], [13, 4], [14, 3], [15, 2]]
         game_state.attempt_spawn(ENCRYPTOR, cannon_points)
         game_state.attempt_spawn(FILTER, cannon_protection_points)
@@ -245,6 +268,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         cannon_points = [[22, 11], [23, 11], [21, 10], [22, 10], [20, 9], [21, 9], [19, 8], [20, 8], [18, 7],
                          [19, 7], [17, 6], [18, 6], [16, 5], [17, 5], [15, 4], [16, 4], [14, 3], [15, 3],
                          [13, 2], [14, 2], [12, 1], [13, 1]]
+        cannon_points.reverse()
         cannon_protection_points = [[21, 11], [20, 10], [19, 9], [18, 8], [17, 7], [16, 6], [15, 5], [14, 4], [13, 3],
                                     [12, 2]]
         game_state.attempt_spawn(ENCRYPTOR, cannon_points)
